@@ -1,0 +1,8 @@
+version: '3.3'
+
+services:
+ mysql1:
+   image: mysql/mysql-server
+   container_name: mysql1
+   ports:
+     - 3306:3306
