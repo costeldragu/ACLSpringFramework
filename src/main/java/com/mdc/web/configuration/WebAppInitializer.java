@@ -12,12 +12,6 @@ import javax.servlet.ServletException;
 public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer implements WebApplicationInitializer {
 
     @Override
-    public void onStartup(ServletContext servletContext) throws ServletException {
-        // Register DispatcherServlet
-        super.onStartup(servletContext);
-    }
-
-    @Override
     protected Class<?>[] getRootConfigClasses() {
         return new Class[]{JavaConf.class, JdbcConfig.class};
     }
@@ -29,6 +23,6 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 
     @Override
     protected String[] getServletMappings() {
-        return new String[] { "/" };
+        return new String[]{"/"};
     }
 }

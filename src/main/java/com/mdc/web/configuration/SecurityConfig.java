@@ -1,13 +1,14 @@
 package com.mdc.web.configuration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,9 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @PropertySource("classpath:security.properties")
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
+    private static Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
     private final Environment env;
 
     @Autowired
@@ -29,11 +31,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         http.authorizeRequests()
                 .antMatchers(env.getProperty("location.resources")).permitAll()
                 .antMatchers(env.getProperty("location.login")).access("hasRole('ANONYMOUS')")
                 .antMatchers(env.getProperty("location.logout")).access("hasRole('USER')")
                 .antMatchers(env.getProperty("location.global")).access("hasRole('USER')")
+
                 .and().exceptionHandling().accessDeniedPage(env.getProperty("location.access_denied"))
 
                 .and().formLogin()
@@ -51,12 +55,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().httpBasic()
                 .and().csrf().disable();
 
+
     }
 
 
     @Override
     public void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser("user").password(new BCryptPasswordEncoder().encode("user")).roles("USER");
+        auth
+                .inMemoryAuthentication().withUser("user").password(new BCryptPasswordEncoder().encode("user")).roles("USER")
+        .and().withUser("admin").password(new BCryptPasswordEncoder().encode("admin")).roles("ADMIN");
     }
 
     @Bean
@@ -69,10 +76,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(env.getProperty("location.resources"));
     }
 
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
 
 }
