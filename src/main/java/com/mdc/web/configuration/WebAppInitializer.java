@@ -11,14 +11,18 @@ import javax.servlet.ServletException;
 
 public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer implements WebApplicationInitializer {
 
+    /**
+     * This will hold the main config files including the security if is necessarily
+     * @return
+     */
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{JavaConf.class, JdbcConfig.class};
+        return new Class[]{SecurityConfig.class, JavaConf.class, JdbcConfig.class};
     }
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{WebMvcConfig.class, SecurityConfig.class, ThymeleafConfig.class};
+        return new Class[]{WebMvcConfig.class, ThymeleafConfig.class};
     }
 
     @Override

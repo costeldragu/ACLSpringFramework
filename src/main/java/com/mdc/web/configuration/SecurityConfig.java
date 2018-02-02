@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @PropertySource("classpath:security.properties")
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
