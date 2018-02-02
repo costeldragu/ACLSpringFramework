@@ -1,5 +1,6 @@
 package com.mdc.web.configuration;
 
+import com.mdc.authentication.UserAuthenticationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,12 +20,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
     private static Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
     private final Environment env;
+    private UserAuthenticationProvider userAuthenticationProvider;
 
     @Autowired
-    protected SecurityConfig(Environment env) {
+    protected SecurityConfig(Environment env, UserAuthenticationProvider userAuthenticationProvider) {
         this.env = env;
+        this.userAuthenticationProvider = userAuthenticationProvider;
+    }
+
+    @Override
+    public void configure(final AuthenticationManagerBuilder auth) throws Exception {
+        auth.eraseCredentials(true)
+                .authenticationProvider(userAuthenticationProvider);
     }
 
     @Override
@@ -33,6 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 .antMatchers(env.getProperty("location.resources")).permitAll()
+                .antMatchers(env.getProperty("location.test")).permitAll()
                 .antMatchers(env.getProperty("location.login")).access("hasRole('ANONYMOUS')")
                 .antMatchers(env.getProperty("location.logout")).access("hasRole('USER')")
                 .antMatchers(env.getProperty("location.global")).access("hasRole('USER')")
@@ -50,20 +60,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().logout()
                 .logoutUrl(env.getProperty("logout.url"))
                 .logoutSuccessUrl(env.getProperty("logout.success.url"))
+                .deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true)
 
                 .and().httpBasic()
                 .and().csrf().disable();
 
-
     }
 
-
-    @Override
-    public void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .inMemoryAuthentication().withUser("user").password(new BCryptPasswordEncoder().encode("user")).roles("USER")
-        .and().withUser("admin").password(new BCryptPasswordEncoder().encode("admin")).roles("ADMIN");
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
