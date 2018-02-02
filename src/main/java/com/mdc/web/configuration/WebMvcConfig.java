@@ -69,6 +69,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addViewController("/login/form")
                 .setViewName("login");
 
+        registry.addViewController("/errors/403")
+                .setViewName("403");
+
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
     }
 
