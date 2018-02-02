@@ -12,6 +12,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -43,14 +44,14 @@ public class UserAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) authentication;
-        String username = token.getName();
+        String username = authentication.getName();
         UserModel user = userService.findByUserName(username);
         if (user == null) {
-            throw new UsernameNotFoundException("[1] - Invalid username/password");
+            throw new UsernameNotFoundException("Invalid username/password");
         }
         String password = user.getPassword();
-        if (!password.equals(token.getCredentials())) {
-            throw new BadCredentialsException("[2] - Invalid username/password");
+        if (!password.equals(new BCryptPasswordEncoder().encode((String) authentication.getCredentials()))) {
+            throw new BadCredentialsException("Invalid username/password");
         }
         Collection<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(user.getRoles());
         return new UsernamePasswordAuthenticationToken(username, password, authorities);

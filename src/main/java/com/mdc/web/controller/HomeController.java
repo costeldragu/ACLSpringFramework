@@ -17,6 +17,7 @@ public class HomeController {
     @GetMapping("/test")
     public String testPage(Principal principal, Model model) {
         model.addAttribute("username",principal.getName());
+        model.addAttribute("principal",principal.toString());
         return "test";
     }
 

@@ -33,10 +33,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth.eraseCredentials(true)
-                .authenticationProvider(userAuthenticationProvider);
+        auth.authenticationProvider(userAuthenticationProvider);
     }
 
+    /**
+     * For some reasons the    .usernameParameter(env.getProperty("login.username.parameter")) and
+     * .passwordParameter(env.getProperty("login.password.parameter")) did not work form start ok and i don't know way.
+     * TODO - Enable the CSRF
+     * @param http
+     * @throws Exception
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
