@@ -24,11 +24,20 @@
 
             <div class="panel-body">
 
-                <form name="form" id="form" class="form-horizontal" enctype="multipart/form-data" method="POST">
-
+                <form name="form" th:action="@{/login}" id="form" class="form-horizontal" enctype="multipart/form-data" method="POST">
+                    <div th:if="${param.error != null}" class="alert alert-danger">
+                        <strong>Failed to login.</strong>
+                        <span th:if="${session[SPRING_SECURITY_LAST_EXCEPTION] != null}">
+                    <span th:text="${session[SPRING_SECURITY_LAST_EXCEPTION].message}">
+                    Invalid credentials</span>
+                </span>
+                    </div>
+                    <div th:if="${param.logout != null}" class="alert alert-success">
+                        You have been logged out.
+                    </div>
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                        <input id="user" type="text" class="form-control" name="user" value="" placeholder="User">
+                        <input id="user" type="text" class="form-control" name="username" value="" placeholder="User">
                     </div>
 
                     <div class="input-group">
@@ -45,6 +54,8 @@
                             </button>
                         </div>
                     </div>
+
+
 
                 </form>
 

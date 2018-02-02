@@ -1,5 +1,6 @@
 package com.mdc.web.configuration;
 
+import com.mdc.autentification.UserAuthenticationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +19,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @PropertySource("classpath:security.properties")
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
     private final Environment env;
+    private final UserAuthenticationProvider userAuthenticationProvider;
 
     @Autowired
-    protected SecurityConfig(Environment env) {
+    protected SecurityConfig(Environment env,UserAuthenticationProvider userAuthenticationProvider) {
         this.env = env;
+        this.userAuthenticationProvider = userAuthenticationProvider;
+    }
+
+    @Override
+    public void configure(final AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(userAuthenticationProvider);
     }
 
     @Override
@@ -35,7 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(env.getProperty("location.resources")).permitAll()
                 .antMatchers(env.getProperty("location.login")).access("hasRole('ANONYMOUS')")
                 .antMatchers(env.getProperty("location.logout")).access("hasRole('USER')")
-                .antMatchers(env.getProperty("location.global")).access("hasRole('USER')")
+                .anyRequest().authenticated()
 
                 .and().exceptionHandling().accessDeniedPage(env.getProperty("location.access_denied"))
 
@@ -50,6 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().logout()
                 .logoutUrl(env.getProperty("logout.url"))
                 .logoutSuccessUrl(env.getProperty("logout.success.url"))
+                .invalidateHttpSession(true)
 
                 .and().httpBasic()
                 .and().csrf().disable();
@@ -58,12 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @Override
-    public void configure(final AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .inMemoryAuthentication().withUser("user").password(new BCryptPasswordEncoder().encode("user")).roles("USER")
-        .and().withUser("admin").password(new BCryptPasswordEncoder().encode("admin")).roles("ADMIN");
-    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
