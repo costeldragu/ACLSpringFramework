@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html  xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Authentication</title>
@@ -24,7 +24,7 @@
 
             <div class="panel-body">
 
-                <form name="form" th:action="@{/login}" id="form" class="form-horizontal" enctype="multipart/form-data" method="POST">
+                <form name="login" th:action="@{/login}" id="form" class="form-horizontal" method="POST">
                     <div th:if="${param.error != null}" class="alert alert-danger">
                         <strong>Failed to login.</strong>
                         <span th:if="${session[SPRING_SECURITY_LAST_EXCEPTION] != null}">
@@ -35,14 +35,15 @@
                     <div th:if="${param.logout != null}" class="alert alert-success">
                         You have been logged out.
                     </div>
+
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                        <input id="user" type="text" class="form-control" name="username" value="" placeholder="User">
+                        <input id="username" type="text" class="form-control" name="theusername" value="" placeholder="User">
                     </div>
 
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-                        <input id="password" type="password" class="form-control" name="password"
+                        <input id="pwd" type="password" class="form-control" name="thepassword"
                                placeholder="Password">
                     </div>
 
@@ -54,8 +55,6 @@
                             </button>
                         </div>
                     </div>
-
-
 
                 </form>
 

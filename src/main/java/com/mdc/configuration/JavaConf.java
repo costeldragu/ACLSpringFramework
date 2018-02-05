@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan({
-        "com.mdc.autentification",
+        "com.mdc.authentication",
         "com.mdc.services"
 })
 public class JavaConf {

@@ -1,6 +1,6 @@
 package com.mdc.web.configuration;
 
-import com.mdc.autentification.UserAuthenticationProvider;
+import com.mdc.authentication.UserAuthenticationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,15 +18,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @PropertySource("classpath:security.properties")
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
     private static Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
     private final Environment env;
-    private final UserAuthenticationProvider userAuthenticationProvider;
+    private UserAuthenticationProvider userAuthenticationProvider;
 
     @Autowired
-    protected SecurityConfig(Environment env,UserAuthenticationProvider userAuthenticationProvider) {
+    protected SecurityConfig(Environment env, UserAuthenticationProvider userAuthenticationProvider) {
         this.env = env;
         this.userAuthenticationProvider = userAuthenticationProvider;
     }
@@ -37,14 +36,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(userAuthenticationProvider);
     }
 
+    /**
+     * For some reasons the    .usernameParameter(env.getProperty("login.username.parameter")) and
+     * .passwordParameter(env.getProperty("login.password.parameter")) did not work form start ok and i don't know way.
+     * TODO - Enable the CSRF
+     * @param http
+     * @throws Exception
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
         http.authorizeRequests()
                 .antMatchers(env.getProperty("location.resources")).permitAll()
+                .antMatchers(env.getProperty("location.test")).permitAll()
                 .antMatchers(env.getProperty("location.login")).access("hasRole('ANONYMOUS')")
                 .antMatchers(env.getProperty("location.logout")).access("hasRole('USER')")
-                .anyRequest().authenticated()
+                .antMatchers(env.getProperty("location.global")).access("hasRole('USER')")
 
                 .and().exceptionHandling().accessDeniedPage(env.getProperty("location.access_denied"))
 
@@ -59,15 +66,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().logout()
                 .logoutUrl(env.getProperty("logout.url"))
                 .logoutSuccessUrl(env.getProperty("logout.success.url"))
+                .deleteCookies("JSESSIONID")
                 .invalidateHttpSession(true)
 
                 .and().httpBasic()
                 .and().csrf().disable();
 
-
     }
-
-
 
 
     @Bean
